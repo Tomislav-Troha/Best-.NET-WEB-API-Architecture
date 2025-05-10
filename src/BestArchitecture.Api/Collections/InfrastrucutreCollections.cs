@@ -10,7 +10,8 @@ namespace BestArchitecture.Api.Collections
         {
             services.AddSingleton<DapperContext>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
-            
+            services.AddScoped<IOrderRepository, OrderRepository>();
+
             return services;
         }
     }

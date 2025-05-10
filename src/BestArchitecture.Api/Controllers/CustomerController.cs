@@ -11,20 +11,22 @@ namespace BestArchitecture.Api.Controllers
     [Route("api/[controller]")]
     public class CustomersController : ControllerBase
     {
-        private readonly ICustomerRepository _repo;
+        private readonly ICustomerRepository _cutomerRepo;
+        private readonly IOrderRepository _orderRepo;
         private readonly IMapper _mapper;
 
-        public CustomersController(ICustomerRepository repo, IMapper mapper)
+        public CustomersController(ICustomerRepository customerRepo, IOrderRepository orderRepo, IMapper mapper)
         {
-            _repo = repo;
+            _cutomerRepo = customerRepo;
+            _orderRepo = orderRepo;
             _mapper = mapper;
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<CustomerDto>> Get(int id)
+        [HttpGet("{customerId:int}")]
+        public async Task<ActionResult<CustomerDto>> Get(int customerId)
         {
             // 1) Dohvati entitet iz Domene
-            Customer? customerEntity = await _repo.GetByIdAsync(id);
+            Customer? customerEntity = await _cutomerRepo.GetByIdAsync(customerId);
             if (customerEntity is null)
                 return NotFound();
 
@@ -32,24 +34,18 @@ namespace BestArchitecture.Api.Controllers
             CustomerDto dto = customerEntity.ToDto<CustomerDto>(_mapper);
 
             //Dohvati order iz Domene
-            Order? order = new Order
-            {
-                Id = 1,
-                Code = "Code",
-                City = "Grad"
-            };
+            var orders = await _orderRepo.GetAllOrdersByCustomer(customerId);
 
-            OrderDto orderDto = order.ToDto<OrderDto>(_mapper);
-
-            dto.Order = orderDto;
-
+            if (orders is not null)
+                dto.Orders = orders.Select(o => o.ToDto<OrderDto>(_mapper)).ToList();
+            
             return Ok(dto);
         }
 
         [HttpGet("GetAll")]
         public async Task<IEnumerable<CustomerDto>> GetAll()
         {
-            var entities = await _repo.ListAsync();
+            var entities = await _cutomerRepo.ListAsync();
             // Mapiranje liste
             return entities
                 .Select(e => e.ToDto<CustomerDto>(_mapper))

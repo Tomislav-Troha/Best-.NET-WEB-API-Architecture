@@ -20,9 +20,9 @@ namespace BestArchitecture.Infrastructure.Repositories
             return new Customer
             {
                 Id = id,
-                Address = "Adresa",
-                City = "Gradovi",
-                Name = "Imenaaaaaaa gradova"
+                Address = "Some Street",
+                City = "New York",
+                Name = "Little Stuart"
             };
         }
 
