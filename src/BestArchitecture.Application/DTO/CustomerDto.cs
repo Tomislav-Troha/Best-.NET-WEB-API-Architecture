@@ -1,6 +1,4 @@
-﻿using BestArchitecture.Domain.Entities;
-
-namespace BestArchitecture.Application.DTO
+﻿namespace BestArchitecture.Application.DTO
 {
     public class CustomerDto
     {

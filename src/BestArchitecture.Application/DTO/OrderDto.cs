@@ -1,4 +1,6 @@
-﻿namespace BestArchitecture.Application.DTO
+﻿using BestArchitecture.Application.DTO.Base;
+
+namespace BestArchitecture.Application.DTO
 {
     public class OrderDto : BaseDto
     {
@@ -8,5 +10,6 @@
         public string? Email { get; set; }
         public string? Address { get; set; }
         public string? City { get; set; }
+        public int? CustomerId { get; set; }
     }
 }

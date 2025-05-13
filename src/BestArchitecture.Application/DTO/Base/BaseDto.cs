@@ -1,4 +1,4 @@
-﻿namespace BestArchitecture.Application.DTO
+﻿namespace BestArchitecture.Application.DTO.Base
 {
     public abstract class BaseDto
     {

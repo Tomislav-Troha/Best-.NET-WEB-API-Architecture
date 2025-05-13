@@ -1,8 +1,4 @@
-﻿using BestArchitecture.Domain.Repositories;
-using BestArchitecture.Infrastructure.Persistance;
-using BestArchitecture.Infrastructure.Repositories;
-
-namespace BestArchitecture.Api.Collections
+﻿namespace BestArchitecture.Api.Collections
 {
     public static class InfrastrucutreCollections
     {

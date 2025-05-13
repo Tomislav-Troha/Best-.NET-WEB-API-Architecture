@@ -1,9 +1,4 @@
-﻿using AutoMapper;
-using BestArchitecture.Application.DTO;
-using BestArchitecture.Application.Extensions;
-using BestArchitecture.Domain.Entities;
-using BestArchitecture.Domain.Repositories;
-using Microsoft.AspNetCore.Mvc;
+﻿using BestArchitecture.Application.Mappings;
 
 namespace BestArchitecture.Api.Controllers
 {
@@ -13,13 +8,11 @@ namespace BestArchitecture.Api.Controllers
     {
         private readonly ICustomerRepository _cutomerRepo;
         private readonly IOrderRepository _orderRepo;
-        private readonly IMapper _mapper;
 
-        public CustomersController(ICustomerRepository customerRepo, IOrderRepository orderRepo, IMapper mapper)
+        public CustomersController(ICustomerRepository customerRepo, IOrderRepository orderRepo)
         {
             _cutomerRepo = customerRepo;
             _orderRepo = orderRepo;
-            _mapper = mapper;
         }
 
         [HttpGet("{customerId:int}")]
@@ -30,15 +23,11 @@ namespace BestArchitecture.Api.Controllers
             if (customerEntity is null)
                 return NotFound();
 
-            // 2) Pretvori ga u DTO s tvojom ekstenzijom
-            CustomerDto dto = customerEntity.ToDto<CustomerDto>(_mapper);
-
             //Dohvati order iz Domene
             var orders = await _orderRepo.GetAllOrdersByCustomer(customerId);
 
-            if (orders is not null)
-                dto.Orders = orders.Select(o => o.ToDto<OrderDto>(_mapper)).ToList();
-            
+            CustomerDto dto = customerEntity.ToDto(orders);
+
             return Ok(dto);
         }
 
@@ -48,7 +37,7 @@ namespace BestArchitecture.Api.Controllers
             var entities = await _cutomerRepo.ListAsync();
             // Mapiranje liste
             return entities
-                .Select(e => e.ToDto<CustomerDto>(_mapper))
+                .Select(e => e.ToDto())
                 .ToList();
         }
     }

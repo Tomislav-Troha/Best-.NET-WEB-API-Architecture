@@ -9,7 +9,7 @@ namespace BestArchitecture.Infrastructure.Repositories
         private readonly DapperContext _db;
 
         public OrderRepository(DapperContext db) => _db = db;
-        public async Task<List<Order>>? GetAllOrdersByCustomer(int customerId)
+        public async Task<List<Order>> GetAllOrdersByCustomer(int customerId)
         {
             // Simulacija vraćanja podataka
             List<Order> orders = new List<Order>
@@ -17,13 +17,18 @@ namespace BestArchitecture.Infrastructure.Repositories
                 new Order
                 {
                     Id = 1,
-                    CustomerID = 1
+                    CustomerID = 1,
+                    Address = "Facebook",
+                    City = "Sillicon Valley",
+                    Code = "F"
                 },
                 new Order
                 {
                     Id = 2,
                     CustomerID = 1,
-                    Address = "Some"
+                    Address = "Google",
+                    City = "Sillicon Valley",
+                    Code = "G"
                 },
 
                 new Order
@@ -34,7 +39,7 @@ namespace BestArchitecture.Infrastructure.Repositories
                 }
             };
 
-            return orders.Where(x => x?.CustomerID == customerId).ToList();
+            return await Task.Run(() => orders.Where(x => x?.CustomerID == customerId).ToList());
 
         }
     }

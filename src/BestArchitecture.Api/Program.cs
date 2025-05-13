@@ -1,11 +1,9 @@
 using BestArchitecture.Api.Collections;
-using BestArchitecture.Application.Extensions;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1) Registracija slojeva
-builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // 2) Registriraj controllers + Swagger

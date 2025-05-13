@@ -4,6 +4,6 @@ namespace BestArchitecture.Domain.Repositories
 {
     public interface IOrderRepository
     {
-        Task<List<Order>>? GetAllOrdersByCustomer(int customerId);
+        Task<List<Order>> GetAllOrdersByCustomer(int customerId);
     }
 }
