@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BestArchitecture.Application\BestArchitecture.Application.csproj" />
     <ProjectReference Include="..\BestArchitecture.Domain\BestArchitecture.Domain.csproj" />
   </ItemGroup>
 

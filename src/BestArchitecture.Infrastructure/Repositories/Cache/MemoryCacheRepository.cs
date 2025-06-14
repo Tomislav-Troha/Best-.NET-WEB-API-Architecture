@@ -1,7 +1,8 @@
-﻿
+﻿using System.Collections.Concurrent;
+using BestArchitecture.Application.Repositories.Cache;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace BestArchitecture.Domain.Repositories.Cache
+namespace BestArchitecture.Infrastructure.Repositories.Cache
 {
     public class MemoryCacheRepository : IMemoryCacheRepository
     {
@@ -12,23 +13,28 @@ namespace BestArchitecture.Domain.Repositories.Cache
         public MemoryCacheRepository(IMemoryCache memoryCache)
         {
             _memoryCache = memoryCache;
-            _memoryCache.Set(_allKeysCacheKey, new HashSet<string>());
+            _memoryCache.Set(_allKeysCacheKey, new ConcurrentDictionary<string, byte>());
+        }
+
+        private ConcurrentDictionary<string, byte> GetKeySet()
+        {
+            if (_memoryCache.TryGetValue(_allKeysCacheKey, out ConcurrentDictionary<string, byte>? keys) && keys != null)
+                return keys;
+
+            keys = new ConcurrentDictionary<string, byte>();
+            _memoryCache.Set(_allKeysCacheKey, keys);
+            return keys;
         }
 
         public Task<T?> GetAsync<T>(string key)
         {
             var obj = _memoryCache.Get(key);
 
-            if (obj is null)
-                return Task.FromResult<T?>(default);
-
             if (obj is T value)
-                return Task.FromResult<T?>(value);
+                return Task.FromResult(value);
 
             return Task.FromResult<T?>(default);
         }
-
-
 
         public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null)
         {
@@ -39,71 +45,64 @@ namespace BestArchitecture.Domain.Repositories.Cache
 
             _memoryCache.Set(key, value, options);
 
-            if (_memoryCache.TryGetValue(_allKeysCacheKey, out HashSet<string>? keys) && keys != null)
-            {
-                keys.Add(key);
-                _memoryCache.Set(_allKeysCacheKey, keys);
-            }
+            var keys = GetKeySet();
+            keys.TryAdd(key, 0);
 
             return Task.CompletedTask;
         }
 
-        public Task<bool> ExistsAsync(string key)
+        public Task<bool> ExistsAsync<T>(string key)
         {
-            return Task.FromResult(_memoryCache.TryGetValue(key, out _));
+            if (_memoryCache.TryGetValue(key, out var value) && value is T typedValue)
+            {
+                if (typedValue is IEnumerable<object> collection)
+                    return Task.FromResult(collection.Any());
+
+                return Task.FromResult(true);
+            }
+
+            return Task.FromResult(false);
         }
 
         public Task RemoveAsync(string key)
         {
             _memoryCache.Remove(key);
 
-            if (_memoryCache.TryGetValue(_allKeysCacheKey, out HashSet<string>? keys) && keys != null)
-            {
-                keys.Remove(key);
-                _memoryCache.Set(_allKeysCacheKey, keys);
-            }
+            var keys = GetKeySet();
+            keys.TryRemove(key, out _);
 
             return Task.CompletedTask;
         }
 
         public Task<List<string>> GetAllKeysAsync()
         {
-            if (_memoryCache.TryGetValue(_allKeysCacheKey, out HashSet<string>? keys) && keys != null)
-                return Task.FromResult(keys.ToList());
-
-            return Task.FromResult(new List<string>());
+            var keys = GetKeySet();
+            return Task.FromResult(keys.Keys.ToList());
         }
 
         public Task ClearAllAsync()
         {
-            if (_memoryCache.TryGetValue(_allKeysCacheKey, out HashSet<string>? keys) && keys != null)
-            {
-                foreach (var key in keys)
-                    _memoryCache.Remove(key);
+            var keys = GetKeySet();
 
-                keys.Clear();
-                _memoryCache.Set(_allKeysCacheKey, keys);
-            }
+            foreach (var key in keys.Keys)
+                _memoryCache.Remove(key);
 
+            keys.Clear();
             return Task.CompletedTask;
         }
 
         public Task RemoveByPrefixAsync(string prefix)
         {
-            if (_memoryCache.TryGetValue(_allKeysCacheKey, out HashSet<string>? keys) && keys != null)
+            var keys = GetKeySet();
+
+            foreach (var key in keys.Keys.Where(k => k.StartsWith(prefix)).ToList())
             {
-                var toRemove = keys.Where(k => k.StartsWith(prefix)).ToList();
-
-                foreach (var key in toRemove)
-                {
-                    _memoryCache.Remove(key);
-                    keys.Remove(key);
-                }
-
-                _memoryCache.Set(_allKeysCacheKey, keys);
+                _memoryCache.Remove(key);
+                keys.TryRemove(key, out _);
             }
 
             return Task.CompletedTask;
         }
     }
+
 }
