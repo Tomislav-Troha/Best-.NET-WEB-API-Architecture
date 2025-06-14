@@ -25,12 +25,11 @@ namespace BestArchitecture.Application.Mappings
             var dto = new OrderDto
             {
                 Id = o.Id,
-                Code = o.Code,
                 Name = o.Name,
                 Address = o.Address,
                 City = o.City,
                 Email = o.Email,
-                Customer = o.Customer?.ToDto()
+                Customer = o.Customer?.ToDto(),
             };
 
             return dto;
